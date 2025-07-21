@@ -12,6 +12,8 @@ import Icon from '@/components/ui/icon';
 const Index = () => {
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [isDemoOpen, setIsDemoOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [password, setPassword] = useState('');
   const [homework, setHomework] = useState('');
   const [readingTest, setReadingTest] = useState('');
   const [demoStartTime, setDemoStartTime] = useState<number | null>(null);
@@ -56,7 +58,17 @@ const Index = () => {
   ];
 
   const handlePayment = () => {
-    alert(`Для доступа к курсам переведите 1000₽ на карту: 2200701050607560\n\nПосле оплаты личный кабинет откроется автоматически!`);
+    setIsPaymentOpen(true);
+  };
+
+  const checkPassword = () => {
+    if (password === '1234') {
+      setIsLoggedIn(true);
+      setIsPaymentOpen(false);
+      setPassword('');
+    } else {
+      alert('Неверный пароль доступа!');
+    }
   };
 
   const startDemo = () => {
@@ -429,7 +441,7 @@ const Index = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setIsPaymentOpen(false)}
+                  onClick={() => {setIsPaymentOpen(false); setPassword('');}}
                   className="text-gray-400 hover:text-white"
                 >
                   <Icon name="X" size={20} />
@@ -437,45 +449,227 @@ const Index = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-[#00D4AA] mb-2">1000₽</div>
-                <p className="text-gray-400">Доступ ко всем курсам навсегда</p>
+              <div className="p-4 bg-[#0066FF]/10 rounded-lg border border-[#0066FF]/30">
+                <h3 className="text-white font-semibold mb-2">Реквизиты для оплаты:</h3>
+                <div className="space-y-2 text-gray-300">
+                  <div>💳 Карта: <span className="font-mono text-[#00D4AA]">2200701050607560</span></div>
+                  <div>💰 Сумма: <span className="text-[#0066FF] font-bold">1000₽</span></div>
+                  <div>📝 Назначение: Скорочтение</div>
+                </div>
               </div>
               
               <div className="space-y-4">
-                <div className="p-4 bg-[#0066FF]/10 rounded-lg border border-[#0066FF]/30">
-                  <Label className="text-gray-300 text-sm">Номер карты для перевода:</Label>
-                  <div className="text-xl font-mono text-[#0066FF] mt-1">2200 7010 5060 7560</div>
+                <div>
+                  <Label htmlFor="password" className="text-white mb-2 block">
+                    Пароль доступа (получите после оплаты):
+                  </Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Введите пароль"
+                    className="bg-[#0F1419] border-[#0066FF]/30 text-white placeholder-gray-500"
+                    onKeyPress={(e) => e.key === 'Enter' && checkPassword()}
+                  />
                 </div>
                 
-                <div className="space-y-3">
-                  {[
-                    "✅ Все курсы скорочтения",
-                    "✅ ИИ-проверка домашних заданий",
-                    "✅ Персональный трекинг прогресса",
-                    "✅ Сертификат о прохождении",
-                    "✅ Доступ навсегда"
-                  ].map((feature, index) => (
-                    <div key={index} className="flex items-center text-gray-300">
-                      {feature}
-                    </div>
-                  ))}
-                </div>
+                <Button
+                  onClick={checkPassword}
+                  className="w-full bg-gradient-to-r from-[#0066FF] to-[#00D4AA] hover:from-[#0052CC] hover:to-[#00B8AA] text-white border-0"
+                  disabled={!password}
+                >
+                  <Icon name="Unlock" size={20} className="mr-2" />
+                  Войти в кабинет
+                </Button>
               </div>
               
-              <Button 
-                onClick={handlePayment}
-                className="w-full bg-gradient-to-r from-[#0066FF] to-[#00D4AA] hover:from-[#0052CC] hover:to-[#00B8AA] text-white border-0"
-              >
-                <Icon name="Smartphone" size={16} className="mr-2" />
-                Перевести 1000₽
-              </Button>
-              
-              <p className="text-xs text-gray-500 text-center">
-                После перевода доступ откроется автоматически в течение 5 минут
-              </p>
+              <div className="text-center">
+                <p className="text-gray-400 text-sm">
+                  💡 Пароль придёт сразу после перевода на указанную карту
+                </p>
+              </div>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {/* Personal Dashboard */}
+      {isLoggedIn && (
+        <div className="fixed inset-0 bg-[#0F1419] z-50 overflow-y-auto">
+          <div className="container mx-auto px-4 py-8">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
+              <h1 className="text-3xl font-bold text-white flex items-center">
+                <Icon name="BookOpen" size={32} className="mr-3 text-[#0066FF]" />
+                Личный кабинет
+              </h1>
+              <Button
+                variant="outline"
+                onClick={() => setIsLoggedIn(false)}
+                className="border-[#0066FF]/30 text-[#0066FF] hover:bg-[#0066FF] hover:text-white"
+              >
+                <Icon name="LogOut" size={20} className="mr-2" />
+                Выйти
+              </Button>
+            </div>
+
+            {/* Progress Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <Card className="bg-[#1A1D29] border-[#0066FF]/30">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <Icon name="Target" size={24} className="text-[#0066FF]" />
+                    <Badge className="bg-[#0066FF]/20 text-[#0066FF] border-[#0066FF]/30">
+                      В процессе
+                    </Badge>
+                  </div>
+                  <h3 className="text-white font-semibold mb-2">Прогресс обучения</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Пройдено уроков</span>
+                      <span className="text-white">8 из 12</span>
+                    </div>
+                    <Progress value={67} className="h-2" />
+                    <p className="text-gray-400 text-sm">67% завершено</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-[#1A1D29] border-[#00D4AA]/30">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <Icon name="Zap" size={24} className="text-[#00D4AA]" />
+                    <Badge className="bg-[#00D4AA]/20 text-[#00D4AA] border-[#00D4AA]/30">
+                      +150%
+                    </Badge>
+                  </div>
+                  <h3 className="text-white font-semibold mb-2">Скорость чтения</h3>
+                  <div className="space-y-2">
+                    <div className="text-2xl font-bold text-[#00D4AA]">620 сл/мин</div>
+                    <p className="text-gray-400 text-sm">Было: 250 сл/мин</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-[#1A1D29] border-[#FF6B6B]/30">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <Icon name="Brain" size={24} className="text-[#FF6B6B]" />
+                    <Badge className="bg-[#FF6B6B]/20 text-[#FF6B6B] border-[#FF6B6B]/30">
+                      Отлично
+                    </Badge>
+                  </div>
+                  <h3 className="text-white font-semibold mb-2">Понимание</h3>
+                  <div className="space-y-2">
+                    <div className="text-2xl font-bold text-[#FF6B6B]">89%</div>
+                    <p className="text-gray-400 text-sm">Средний результат тестов</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Course Content */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Lessons */}
+              <Card className="bg-[#1A1D29] border-[#0066FF]/30">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Icon name="PlayCircle" size={24} className="mr-2 text-[#0066FF]" />
+                    Уроки курса
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {[
+                    { id: 1, title: "Основы скорочтения", completed: true, duration: "15 мин" },
+                    { id: 2, title: "Устранение проговаривания", completed: true, duration: "20 мин" },
+                    { id: 3, title: "Расширение угла зрения", completed: true, duration: "25 мин" },
+                    { id: 4, title: "Техники концентрации", completed: false, duration: "18 мин", current: true },
+                    { id: 5, title: "Работа с таблицами", completed: false, duration: "22 мин" }
+                  ].map((lesson) => (
+                    <div
+                      key={lesson.id}
+                      className={`p-4 rounded-lg border flex items-center justify-between ${
+                        lesson.completed
+                          ? 'bg-[#00D4AA]/10 border-[#00D4AA]/30'
+                          : lesson.current
+                          ? 'bg-[#0066FF]/10 border-[#0066FF]/30'
+                          : 'bg-[#1A1D29] border-gray-700'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <Icon
+                          name={lesson.completed ? "CheckCircle" : lesson.current ? "Play" : "Lock"}
+                          size={20}
+                          className={`mr-3 ${
+                            lesson.completed
+                              ? 'text-[#00D4AA]'
+                              : lesson.current
+                              ? 'text-[#0066FF]'
+                              : 'text-gray-500'
+                          }`}
+                        />
+                        <div>
+                          <h4 className="text-white font-medium">{lesson.title}</h4>
+                          <p className="text-gray-400 text-sm">{lesson.duration}</p>
+                        </div>
+                      </div>
+                      {lesson.current && (
+                        <Button size="sm" className="bg-[#0066FF] hover:bg-[#0052CC] text-white">
+                          Продолжить
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* Homework & Tests */}
+              <div className="space-y-6">
+                <Card className="bg-[#1A1D29] border-[#00D4AA]/30">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center">
+                      <Icon name="FileText" size={24} className="mr-2 text-[#00D4AA]" />
+                      Домашние задания
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Textarea
+                      value={homework}
+                      onChange={(e) => setHomework(e.target.value)}
+                      placeholder="Опишите свой прогресс, трудности и результаты тренировок..."
+                      className="bg-[#0F1419] border-[#00D4AA]/30 text-white placeholder-gray-500 min-h-[120px]"
+                    />
+                    <Button className="mt-4 w-full bg-[#00D4AA] hover:bg-[#00B8AA] text-white">
+                      <Icon name="Send" size={20} className="mr-2" />
+                      Отправить задание
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-[#1A1D29] border-[#FF6B6B]/30">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center">
+                      <Icon name="Timer" size={24} className="mr-2 text-[#FF6B6B]" />
+                      Тест скорости
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center p-3 bg-[#FF6B6B]/10 rounded-lg">
+                        <span className="text-white">Последний результат:</span>
+                        <span className="text-[#FF6B6B] font-bold">620 сл/мин</span>
+                      </div>
+                      <Button className="w-full bg-[#FF6B6B] hover:bg-[#FF5252] text-white">
+                        <Icon name="Play" size={20} className="mr-2" />
+                        Начать новый тест
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
