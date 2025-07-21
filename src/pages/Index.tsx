@@ -11,8 +11,16 @@ import Icon from '@/components/ui/icon';
 
 const Index = () => {
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [isDemoOpen, setIsDemoOpen] = useState(false);
   const [homework, setHomework] = useState('');
   const [readingTest, setReadingTest] = useState('');
+  const [demoStartTime, setDemoStartTime] = useState<number | null>(null);
+  const [demoText, setDemoText] = useState('');
+  const [demoQuestions, setDemoQuestions] = useState<{question: string, answers: string[], correct: number}[]>([]);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [demoAnswers, setDemoAnswers] = useState<number[]>([]);
+  const [demoFinished, setDemoFinished] = useState(false);
+  const [readingSpeed, setReadingSpeed] = useState(0);
 
   const courses = [
     {
@@ -49,6 +57,66 @@ const Index = () => {
 
   const handlePayment = () => {
     alert(`Для доступа к курсам переведите 1000₽ на карту: 2200701050607560\n\nПосле оплаты личный кабинет откроется автоматически!`);
+  };
+
+  const startDemo = () => {
+    const text = `Скорочтение — это навык быстрого восприятия и понимания текстовой информации без потери качества усвоения материала. Обычный человек читает со скоростью 200-250 слов в минуту, при этом усваивает около 60-70% прочитанного. 
+
+Однако с помощью специальных техник можно увеличить скорость чтения до 800-1200 слов в минуту, сохранив понимание на уровне 80-90%. Основные принципы скорочтения включают: устранение внутреннего проговаривания, расширение угла зрения, работу с ключевыми словами и развитие периферического зрения.
+
+Важно понимать, что скорочтение — это не просто быстрое перелистывание страниц, а системный подход к обработке информации. Мозг человека способен воспринимать информацию значительно быстрее, чем мы привыкли читать. Современные техники скорочтения основаны на научных исследованиях работы мозга и зрительного восприятия.`;
+    
+    const questions = [
+      {
+        question: "Какова обычная скорость чтения человека?",
+        answers: ["100-150 слов/мин", "200-250 слов/мин", "300-400 слов/мин", "500-600 слов/мин"],
+        correct: 1
+      },
+      {
+        question: "До какой скорости можно увеличить чтение с помощью техник?",
+        answers: ["400-500 слов/мин", "600-700 слов/мин", "800-1200 слов/мин", "1500-2000 слов/мин"],
+        correct: 2
+      },
+      {
+        question: "Какой принцип НЕ относится к основам скорочтения?",
+        answers: ["Устранение внутреннего проговаривания", "Расширение угла зрения", "Медленное и вдумчивое чтение", "Работа с ключевыми словами"],
+        correct: 2
+      }
+    ];
+    
+    setDemoText(text);
+    setDemoQuestions(questions);
+    setCurrentQuestion(0);
+    setDemoAnswers([]);
+    setDemoFinished(false);
+    setReadingSpeed(0);
+    setIsDemoOpen(true);
+    setDemoStartTime(Date.now());
+  };
+
+  const finishReading = () => {
+    if (demoStartTime) {
+      const timeSpent = (Date.now() - demoStartTime) / 1000 / 60; // в минутах
+      const wordCount = demoText.split(' ').length;
+      const speed = Math.round(wordCount / timeSpent);
+      setReadingSpeed(speed);
+    }
+  };
+
+  const selectAnswer = (answerIndex: number) => {
+    const newAnswers = [...demoAnswers];
+    newAnswers[currentQuestion] = answerIndex;
+    setDemoAnswers(newAnswers);
+    
+    if (currentQuestion < demoQuestions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+    } else {
+      // Завершаем тест
+      const correct = demoQuestions.filter((q, i) => q.correct === newAnswers[i]).length;
+      const percentage = Math.round((correct / demoQuestions.length) * 100);
+      setDemoFinished(true);
+      alert(`Тест завершён!\nВаша скорость: ${readingSpeed} слов/мин\nПонимание: ${percentage}%\n\nЭто отличный результат для начала!`);
+    }
   };
 
   const checkHomework = () => {
@@ -113,6 +181,7 @@ const Index = () => {
                 <Button 
                   variant="outline" 
                   size="lg"
+                  onClick={startDemo}
                   className="border-[#0066FF] text-[#0066FF] hover:bg-[#0066FF] hover:text-white text-lg px-8 py-6"
                 >
                   <Icon name="Play" size={20} className="mr-2" />
@@ -135,7 +204,7 @@ const Index = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 border-y border-[#0066FF]/20">
+      <section className="py-16 border-y border-[#0066FF]/20 bg-white/5">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {[
@@ -145,11 +214,11 @@ const Index = () => {
               { number: "98%", label: "Успешность", icon: "Award" }
             ].map((stat, index) => (
               <div key={index} className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-r from-[#0066FF] to-[#00D4AA] rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-gradient-to-r from-[#0066FF] to-[#00D4AA] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                   <Icon name={stat.icon as any} size={24} className="text-white" />
                 </div>
-                <div className="text-3xl font-bold text-white mb-2">{stat.number}</div>
-                <div className="text-gray-400">{stat.label}</div>
+                <div className="text-4xl font-bold bg-gradient-to-r from-[#0066FF] to-[#00D4AA] bg-clip-text text-transparent mb-2">{stat.number}</div>
+                <div className="text-gray-200 font-medium text-lg">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -405,6 +474,127 @@ const Index = () => {
               <p className="text-xs text-gray-500 text-center">
                 После перевода доступ откроется автоматически в течение 5 минут
               </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Demo Lesson Modal */}
+      {isDemoOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-4xl bg-[#1A1D29] border-[#0066FF]/30 max-h-[90vh] overflow-y-auto">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-white flex items-center">
+                  <Icon name="Play" size={24} className="mr-2 text-[#0066FF]" />
+                  Демо урок: Основы скорочтения
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsDemoOpen(false)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <Icon name="X" size={20} />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {!demoFinished ? (
+                <>
+                  {currentQuestion === 0 && readingSpeed === 0 ? (
+                    <div className="space-y-6">
+                      <div className="p-6 bg-[#0066FF]/10 rounded-lg border border-[#0066FF]/30">
+                        <div className="flex items-center justify-between mb-4">
+                          <Badge className="bg-[#00D4AA]/20 text-[#00D4AA] border-[#00D4AA]/30">
+                            📖 Читайте внимательно
+                          </Badge>
+                          <div className="text-[#0066FF] font-mono text-sm">
+                            Слов: {demoText.split(' ').length}
+                          </div>
+                        </div>
+                        <div className="text-white text-lg leading-relaxed whitespace-pre-line">
+                          {demoText}
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <Button
+                          onClick={finishReading}
+                          size="lg"
+                          className="bg-gradient-to-r from-[#0066FF] to-[#00D4AA] hover:from-[#0052CC] hover:to-[#00B8AA] text-white border-0"
+                        >
+                          <Icon name="CheckCircle" size={20} className="mr-2" />
+                          Я прочитал текст
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-xl text-white">
+                          Вопрос {currentQuestion + 1} из {demoQuestions.length}
+                        </h3>
+                        <Badge className="bg-[#0066FF]/20 text-[#0066FF] border-[#0066FF]/30">
+                          Скорость: {readingSpeed} слов/мин
+                        </Badge>
+                      </div>
+                      
+                      <div className="p-6 bg-[#0066FF]/10 rounded-lg border border-[#0066FF]/30">
+                        <h4 className="text-lg text-white mb-6">
+                          {demoQuestions[currentQuestion]?.question}
+                        </h4>
+                        <div className="space-y-3">
+                          {demoQuestions[currentQuestion]?.answers.map((answer, index) => (
+                            <Button
+                              key={index}
+                              variant="outline"
+                              className="w-full text-left justify-start p-4 h-auto border-[#0066FF]/30 text-gray-300 hover:bg-[#0066FF]/20 hover:text-white hover:border-[#0066FF]"
+                              onClick={() => selectAnswer(index)}
+                            >
+                              <span className="bg-[#0066FF] text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3">
+                                {String.fromCharCode(65 + index)}
+                              </span>
+                              {answer}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center space-y-6">
+                  <div className="w-20 h-20 bg-gradient-to-r from-[#0066FF] to-[#00D4AA] rounded-full flex items-center justify-center mx-auto">
+                    <Icon name="Trophy" size={40} className="text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white">
+                    Поздравляем с завершением демо урока!
+                  </h3>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="p-4 bg-[#0066FF]/10 rounded-lg border border-[#0066FF]/30">
+                      <div className="text-2xl font-bold text-[#0066FF] mb-2">{readingSpeed}</div>
+                      <div className="text-gray-300">слов/мин</div>
+                    </div>
+                    <div className="p-4 bg-[#00D4AA]/10 rounded-lg border border-[#00D4AA]/30">
+                      <div className="text-2xl font-bold text-[#00D4AA] mb-2">
+                        {Math.round((demoQuestions.filter((q, i) => q.correct === demoAnswers[i]).length / demoQuestions.length) * 100)}%
+                      </div>
+                      <div className="text-gray-300">понимание</div>
+                    </div>
+                  </div>
+                  <p className="text-gray-300">
+                    Отличный результат! В полных курсах вы научитесь читать ещё быстрее.
+                  </p>
+                  <Button
+                    onClick={handlePayment}
+                    size="lg"
+                    className="bg-gradient-to-r from-[#0066FF] to-[#00D4AA] hover:from-[#0052CC] hover:to-[#00B8AA] text-white border-0"
+                  >
+                    <Icon name="Rocket" size={20} className="mr-2" />
+                    Получить полный доступ за 1000₽
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
